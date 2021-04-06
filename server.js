@@ -1,6 +1,10 @@
 const express = require('express');
 const app = express();
 const bcrypt = require('bcrypt');
+const passport = require('passport');
+
+const initializePassport = require('./passport-config');
+initializePassport(passport, email => users.find(user => user.email === email));
 
 const users = [];
 
@@ -25,7 +29,9 @@ app.post('/login', (req, res) => {
 
 app.post('/register', async (req, res) => {
     try {
-        const hashedPassword = await bcrypt.hash(req.body.password, 10);
+        const password = req.body.password;
+        const hashedPassword = await bcrypt.hash(password, 10);
+        console.log({ password, hashedPassword })
         users.push({
             id: Date.now().toString(),
             name: req.body.name,
@@ -33,10 +39,11 @@ app.post('/register', async (req, res) => {
             password: hashedPassword,
         });
         res.redirect('/login');
-    } catch {
+    } catch (e) {
         res.redirect('/register');
+        console.error(e);
     }
     console.log(users);
 });
 
-app.listen(3000);
+app.listen(3000, () => console.log('Express server started at http://localhost:3000'));
